@@ -7,16 +7,7 @@ Companion code for:
 
 > **EL Mahdi Khribch & Pierre Alquier** (2026).
 > *Variational Approximations for Robust Bayesian Inference via $\rho$-Posteriors.*
-> Submitted to the Journal of the American Statistical Association (JASA).
 > [arXiv:2601.07325](https://arxiv.org/abs/2601.07325)
-
-## Abstract
-
-The $\rho$-posterior framework provides universal Bayesian estimation with explicit contamination-rate control and minimax-optimal convergence guarantees, but has remained computationally intractable due to an inner optimisation over reference distributions. We develop a PAC-Bayesian variational formulation that recovers these theoretical properties through temperature-dependent Gibbs posteriors. Specifically, we cast $\rho$-posterior inference as a saddle-point problem over a mean-field Gaussian variational family and a worst-case competitor, derive finite-sample oracle inequalities with explicit rates under the Hellinger contrast
-
-$$\psi(x) = \frac{\sqrt{x} - 1}{\sqrt{x} + 1},$$
-
-and introduce gradient-based algorithms (with reparametrisation trick and Polyak averaging) that make the approach practical. Numerical experiments on contaminated exponential families and real-world regression benchmarks confirm that the variational $\tilde{\rho}$-posterior achieves the theoretical breakdown point while remaining computationally feasible.
 
 ## Experiments
 
@@ -101,9 +92,10 @@ Rscript R/plot_realworld.R
   title   = {Variational Approximations for Robust {B}ayesian Inference
              via $\rho$-Posteriors},
   author  = {Khribch, EL Mahdi and Alquier, Pierre},
-  journal = {Submitted to JASA},
   year    = {2026},
-  note    = {arXiv:2601.07325}
+  eprint  = {2601.07325},
+  archivePrefix = {arXiv},
+  primaryClass  = {stat.ME}
 }
 ```
 
