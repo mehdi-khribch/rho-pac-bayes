@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pac-bayes-rho"
+version = "1.0.0"
+description = "Variational approximations of generalised rho-posteriors for robust Bayesian inference."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Mehdi Khribch"},
+    {name = "Pierre Alquier"},
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "pandas>=2.0",
+    "torch>=2.0",
+    "scikit-learn>=1.3",
+    "matplotlib>=3.7",
+    "tqdm>=4.65",
+    "jupyter>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "black>=23.0",
+    "ruff>=0.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
