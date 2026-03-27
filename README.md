@@ -45,7 +45,7 @@ Each configuration is evaluated over $1{,}000$ random 80/20 train-test splits, c
 ## Reproducing the results
 
 ```bash
-git clone https://github.com/mehdi-khribch/pac-bayes-jasa.git
+git clone https://github.com/mehdi-khribch/rho-pac-bayes.git
 cd pac-bayes-jasa
 make venv          # create virtual environment and install dependencies
 make all           # run all experiments and generate all figures
