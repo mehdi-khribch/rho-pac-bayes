@@ -89,11 +89,21 @@ def load_abalone(data_dir: str | Path = "data") -> Tuple[np.ndarray, np.ndarray]
     abalone = fetch_openml(name="abalone", version=1, as_frame=True)
     df = abalone.frame
 
-    # Target
-    y = df["Rings"].values.astype(float)
+    # Target -- column name varies across OpenML versions
+    target_col = abalone.target.name if hasattr(abalone.target, "name") else None
+    if target_col is None or target_col not in df.columns:
+        for candidate in ["Rings", "rings", "Class_number_of_rings"]:
+            if candidate in df.columns:
+                target_col = candidate
+                break
+        else:
+            # Last resort: use the last column
+            target_col = df.columns[-1]
+
+    y = df[target_col].values.astype(float)
 
     # Features: one-hot encode Sex, keep numeric
-    X_df = df.drop(columns=["Rings"])
+    X_df = df.drop(columns=[target_col])
     X_df = pd.get_dummies(X_df, drop_first=True)
     X_df = X_df.fillna(X_df.median())
 
