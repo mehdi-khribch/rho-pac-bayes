@@ -55,6 +55,8 @@ class RegressionOptimizer:
         y: np.ndarray,
         lambda_reg: float,
         prior_std: float = 2.0,
+        noise_std: float = 1.0,
+        init_mean: np.ndarray | None = None,
         device: str | None = None,
     ):
         self.device = torch.device(
@@ -64,12 +66,23 @@ class RegressionOptimizer:
         self.y = torch.tensor(y, dtype=torch.float32, device=self.device)
         self.n, self.p = X.shape
         self.lambda_reg = lambda_reg
+        self.noise_var = noise_std ** 2
 
         self.prior_mean = torch.zeros(self.p, device=self.device)
         self.prior_std = torch.ones(self.p, device=self.device) * prior_std
 
         self.rho_main = VariationalGaussian(self.p).to(self.device)
         self.rho_comp = VariationalGaussian(self.p).to(self.device)
+
+        # Warm-start: initialise variational mean at a given point (e.g. OLS)
+        if init_mean is not None:
+            with torch.no_grad():
+                self.rho_main.mean.copy_(
+                    torch.tensor(init_mean, dtype=torch.float32, device=self.device)
+                )
+                self.rho_comp.mean.copy_(
+                    torch.tensor(init_mean, dtype=torch.float32, device=self.device)
+                )
 
         self.opt_main = torch.optim.Adam(self.rho_main.parameters(), lr=1e-2)
         self.opt_comp = torch.optim.Adam(self.rho_comp.parameters(), lr=1e-2)
@@ -103,7 +116,7 @@ class RegressionOptimizer:
         sq1 = resid1.pow(2).unsqueeze(2)  # (n, k1, 1)
         sq2 = resid2.pow(2).unsqueeze(1)  # (n, 1, k2)
 
-        log_ratio = -0.5 * (sq2 - sq1)  # (n, k1, k2)
+        log_ratio = -0.5 / self.noise_var * (sq2 - sq1)  # (n, k1, k2)
         return torch.exp(torch.clamp(log_ratio, min=-40.0, max=40.0))
 
     def compute_objective(self, n_mc: int = 128):
@@ -160,12 +173,13 @@ class RegressionOptimizer:
         self.history["kl_main"].append(kl_main.item())
         self.history["kl_comp"].append(kl_comp.item())
 
-        if self._polyak_mean is None:
-            self._polyak_mean = mean_np
-        else:
-            c = self._polyak_count
-            self._polyak_mean = (self._polyak_mean * c + mean_np) / (c + 1)
-        self._polyak_count += 1
+        if getattr(self, "_polyak_active", True):
+            if self._polyak_mean is None:
+                self._polyak_mean = mean_np
+            else:
+                c = self._polyak_count
+                self._polyak_mean = (self._polyak_mean * c + mean_np) / (c + 1)
+            self._polyak_count += 1
 
         return obj.item(), risk.item(), kl_main.item(), kl_comp.item()
 
@@ -176,11 +190,31 @@ class RegressionOptimizer:
         lr_main: float = 1e-2,
         lr_comp: float = 1e-2,
         clip_grad: float = 5.0,
+        polyak_burnin: float = 0.5,
         verbose: bool = False,
         log_every: int = 50,
     ) -> None:
-        """Run the full optimization loop."""
+        """Run the full optimization loop.
+
+        Parameters
+        ----------
+        polyak_burnin : float
+            Fraction of iterations to discard before starting Polyak
+            averaging (default 0.5 = first half discarded).
+        """
+        burnin_iter = int(n_iter * polyak_burnin)
+        # Reset Polyak state so burn-in works correctly
+        self._polyak_mean = None
+        self._polyak_count = 0
+        self._polyak_active = False
+
         for t in range(1, n_iter + 1):
+            # Activate Polyak averaging after burn-in
+            if t == burnin_iter + 1:
+                self._polyak_mean = None
+                self._polyak_count = 0
+                self._polyak_active = True
+
             obj, risk, kl_m, kl_c = self.step(
                 n_mc=n_mc, clip_grad=clip_grad,
                 lr_main=lr_main, lr_comp=lr_comp,

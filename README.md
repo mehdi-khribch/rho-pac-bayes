@@ -46,7 +46,7 @@ Each configuration is evaluated over $1{,}000$ random 80/20 train-test splits, c
 
 ```bash
 git clone https://github.com/mehdi-khribch/rho-pac-bayes.git
-cd pac-bayes-jasa
+cd rho-pac-bayes
 make venv          # create virtual environment and install dependencies
 make all           # run all experiments and generate all figures
 ```

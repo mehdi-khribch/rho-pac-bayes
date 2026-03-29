@@ -278,12 +278,20 @@ def evaluate_realworld(
         res_huber_all.append(res_huber)
 
         # 3) Rho-posterior
-        lambda_reg = tau * len(y_train_c)
+        # Estimate noise std from OLS residuals for proper likelihood scaling
+        resid_ols_train = y_train_c - X_train @ beta_ols
+        sigma_hat = max(np.std(resid_ols_train), 1e-6)
+
+        n_train = len(y_train_c)
+        lambda_reg = tau * n_train
         opt = RegressionOptimizer(
             X_train, y_train_c,
             lambda_reg=lambda_reg, prior_std=prior_std,
+            noise_std=sigma_hat,
+            init_mean=beta_ols,
         )
-        opt.optimize(n_iter=n_iter_opt, n_mc=n_mc_opt, verbose=False)
+        opt.optimize(n_iter=n_iter_opt, n_mc=n_mc_opt,
+                     polyak_burnin=0.5, verbose=False)
         beta_rho, _ = opt.get_estimate(use_polyak=True)
         res_rho = y_test - X_test @ beta_rho
         mse_rho_list.append(float(np.mean(res_rho**2)))

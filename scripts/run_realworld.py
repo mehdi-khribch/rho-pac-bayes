@@ -50,11 +50,11 @@ def main():
         strength=15.0,
         n_repeats=1000,
         test_size=0.2,
-        tau=0.1,
-        prior_std=1.0,
+        tau=0.9,
+        prior_std=5.0,
         huber_epsilon=1.35,
-        n_iter_opt=500,
-        n_mc_opt=128,
+        n_iter_opt=150,
+        n_mc_opt=32,
         seed=0,
     )
 
@@ -78,11 +78,11 @@ def main():
         strength=15.0,
         n_repeats=1000,
         test_size=0.2,
-        tau=0.1,
-        prior_std=1.0,
+        tau=0.9,
+        prior_std=5.0,
         huber_epsilon=1.35,
-        n_iter_opt=500,
-        n_mc_opt=128,
+        n_iter_opt=150,
+        n_mc_opt=32,
         seed=0,
     )
 
