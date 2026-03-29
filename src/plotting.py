@@ -361,3 +361,49 @@ def plot_predicted_vs_true(
     if save_path:
         fig.savefig(save_path)
     return fig
+
+
+def plot_residual_density(
+    residuals_csv: str | Path,
+    save_path: str | Path | None = None,
+    title: str = "",
+    xlim: tuple | None = None,
+) -> plt.Figure:
+    """Kernel density plot of test residuals for real-world experiments.
+
+    Parameters
+    ----------
+    residuals_csv : path to CSV with columns OLS, Huber, Rho
+    save_path : optional path to save figure
+    title : figure title
+    xlim : optional (xmin, xmax) to restrict the x-axis
+    """
+    set_paper_style()
+    df = pd.read_csv(residuals_csv)
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+
+    colors = {"OLS": "tab:blue", "Huber": "tab:orange", "Rho": "tab:green"}
+    labels = {"OLS": "OLS", "Huber": "Huber", "Rho": r"$\tilde{\rho}$-posterior"}
+
+    for col in ["OLS", "Huber", "Rho"]:
+        vals = df[col].dropna().values
+        if xlim is not None:
+            vals = vals[(vals >= xlim[0]) & (vals <= xlim[1])]
+        from scipy.stats import gaussian_kde
+        kde = gaussian_kde(vals, bw_method=0.3)
+        grid = np.linspace(vals.min(), vals.max(), 500)
+        ax.plot(grid, kde(grid), color=colors[col], label=labels[col], lw=1.5)
+
+    ax.set_xlabel("Test residual")
+    ax.set_ylabel("Density")
+    if title:
+        ax.set_title(title)
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    ax.legend(frameon=False)
+    fig.tight_layout()
+
+    if save_path:
+        fig.savefig(save_path)
+    return fig

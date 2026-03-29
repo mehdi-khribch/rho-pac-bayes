@@ -20,6 +20,7 @@ from src.plotting import (
     plot_density_poisson,
     plot_density_uniform,
     plot_predicted_vs_true,
+    plot_residual_density,
 )
 
 RESULTS = Path("results")
@@ -79,6 +80,33 @@ def main():
         plot_predicted_vs_true(pred, save_path=FIGURES / "predictedvsfitted.pdf")
 
     print("Correlated regression figures saved.")
+
+    # ----------------------------------------------------------
+    # Real-world: Housing
+    # ----------------------------------------------------------
+    hr = RESULTS / "housing_residuals.csv"
+    if hr.exists():
+        plot_residual_density(
+            hr,
+            save_path=FIGURES / "residuals_housing.pdf",
+            title="Ames Housing -- test residuals",
+            xlim=(-1.5, 1.5),
+        )
+        print("Housing residual density figure saved.")
+
+    # ----------------------------------------------------------
+    # Real-world: Abalone
+    # ----------------------------------------------------------
+    ar = RESULTS / "abalone_residuals.csv"
+    if ar.exists():
+        plot_residual_density(
+            ar,
+            save_path=FIGURES / "residuals_abalone.pdf",
+            title="Abalone -- test residuals",
+            xlim=(-10, 10),
+        )
+        print("Abalone residual density figure saved.")
+
     print(f"\nAll figures written to {FIGURES}/")
 
 
