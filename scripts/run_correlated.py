@@ -37,10 +37,10 @@ def main():
         sparsity=5,
         epsilon_values=[0.0, 0.05, 0.08, 0.10],
         n_trials=1000,
-        tau=0.5,
-        prior_std=2.0,
-        n_iter_opt=500,
-        n_mc_opt=128,
+        tau=0.9,
+        prior_std=5.0,
+        n_iter_opt=200,
+        n_mc_opt=64,
     )
 
     summary_df.to_csv(RESULTS_DIR / "correlated_summary.csv", index=False)
