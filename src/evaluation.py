@@ -298,10 +298,14 @@ def evaluate_fourier_regression(
             err_bayes = float(np.linalg.norm(beta_bayes - beta_true))
 
             # Rho-posterior
+            resid_ols_train = y - Phi @ beta_ols
+            sigma_hat = max(float(np.std(resid_ols_train)), 1e-6)
             opt = RegressionOptimizer(
                 Phi, y, lambda_reg=lambda_reg, prior_std=prior_std,
+                noise_std=sigma_hat, init_mean=beta_ols,
             )
-            opt.optimize(n_iter=n_iter_opt, n_mc=n_mc_opt, verbose=False)
+            opt.optimize(n_iter=n_iter_opt, n_mc=n_mc_opt,
+                         polyak_burnin=0.5, verbose=False)
             beta_rho, _ = opt.get_estimate(use_polyak=True)
             err_rho = float(np.linalg.norm(beta_rho - beta_true))
 
@@ -366,10 +370,14 @@ def evaluate_correlated_regression(
             beta_bayes, _ = bayes_regression(X, y, prior_std=prior_std)
             err_bayes = float(np.linalg.norm(beta_bayes - beta_true))
 
+            resid_ols_train = y - X @ beta_ols
+            sigma_hat = max(float(np.std(resid_ols_train)), 1e-6)
             opt = RegressionOptimizer(
                 X, y, lambda_reg=lambda_reg, prior_std=prior_std,
+                noise_std=sigma_hat, init_mean=beta_ols,
             )
-            opt.optimize(n_iter=n_iter_opt, n_mc=n_mc_opt, verbose=False)
+            opt.optimize(n_iter=n_iter_opt, n_mc=n_mc_opt,
+                         polyak_burnin=0.5, verbose=False)
             beta_rho, _ = opt.get_estimate(use_polyak=True)
             err_rho = float(np.linalg.norm(beta_rho - beta_true))
 
